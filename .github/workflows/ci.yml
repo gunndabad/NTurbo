@@ -1,0 +1,63 @@
+name: ci
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - v*
+    paths-ignore:
+    - docs/**
+    - LICENSE
+    - '**.md'
+  pull_request:
+    branches:
+    - main
+    paths-ignore:
+    - docs/**
+    - LICENSE
+    - '**.md'
+
+jobs:
+  server-build:
+
+    name: "Server build & package"
+    runs-on: windows-latest
+
+    env:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Clean
+      run: |
+        dotnet clean --configuration Release
+        dotnet nuget locals all --clear
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test test/NTurbo.Tests --configuration Release --no-build
+
+    - name: Package
+      run: dotnet pack src/NTurbo/ --configuration Release --no-build
+      env:
+        MINVERBUILDMETADATA: ${{ env.GITHUB_RUN_NUMBER }}
+
+    - name: Publish package artifact
+      uses: actions/upload-artifact@v2-preview
+      with:
+        name: NTurbo.nupkg
+        path: server/src/NTurbo/bin/Release/*.nupkg
