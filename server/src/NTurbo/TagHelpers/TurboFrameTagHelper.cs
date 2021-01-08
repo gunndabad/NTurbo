@@ -13,7 +13,16 @@ namespace NTurbo.TagHelpers
     /// <summary>
     /// A <see cref="ITagHelper"/> implementation targeting &lt;turbo-frame&gt; elements.
     /// </summary>
-    [HtmlTargetElement(TagName)]
+    [HtmlTargetElement(TagName, Attributes = ActionAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = ControllerAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = AreaAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = PageAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = PageHandlerAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = HostAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = ProtocolAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = RouteAttributeName)]
+    [HtmlTargetElement(TagName, Attributes = RouteValuesDictionaryName)]
+    [HtmlTargetElement(TagName, Attributes = RouteValuesPrefix + "*")]
     public class TurboFrameTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";
@@ -33,7 +42,6 @@ namespace NTurbo.TagHelpers
 
         private readonly IUrlHelperFactory _urlHelperFactory;
 
-        private string? _id;
         private IDictionary<string, string>? _routeValues;
 
         /// <summary>
@@ -49,7 +57,7 @@ namespace NTurbo.TagHelpers
         /// The name of the action method.
         /// </summary>
         /// <remarks>
-        /// Must be <c>null</c> if <see cref="Route"/>, <see cref="Page"/> or <see cref="Src"/> is non-<c>null</c>.
+        /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Page"/> is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(ActionAttributeName)]
         public string? Action { get; set; }
@@ -58,8 +66,7 @@ namespace NTurbo.TagHelpers
         /// The name of the controller.
         /// </summary>
         /// <remarks>
-        /// Must be <c>null</c> if <see cref="Route"/>, <see cref="Page"/> or <see cref="Src"/>
-        /// is non-<c>null</c>.
+        /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Page"/> is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(ControllerAttributeName)]
         public string? Controller { get; set; }
@@ -68,7 +75,7 @@ namespace NTurbo.TagHelpers
         /// The name of the area.
         /// </summary>
         /// <remarks>
-        /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Src"/> is non-<c>null</c>.
+        /// Must be <c>null</c> if <see cref="Route"/> is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(AreaAttributeName)]
         public string? Area { get; set; }
@@ -78,7 +85,7 @@ namespace NTurbo.TagHelpers
         /// </summary>
         /// <remarks>
         /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Action"/>, <see cref="Controller"/>
-        /// or <see cref="Src"/> is non-<c>null</c>.
+        /// is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(PageAttributeName)]
         public string? Page { get; set; }
@@ -88,7 +95,7 @@ namespace NTurbo.TagHelpers
         /// </summary>
         /// <remarks>
         /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Action"/>, <see cref="Controller"/>
-        /// or <see cref="Src"/> is non-<c>null</c>.
+        /// is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(PageHandlerAttributeName)]
         public string? PageHandler { get; set; }
@@ -110,7 +117,7 @@ namespace NTurbo.TagHelpers
         /// </summary>
         /// <remarks>
         /// Must be <c>null</c> if one of <see cref="Action"/>, <see cref="Controller"/>, <see cref="Area"/> 
-        /// <see cref="Page"/> or <see cref="Src"/> is non-<c>null</c>.
+        /// or <see cref="Page"/> is non-<c>null</c>.
         /// </remarks>
         [HtmlAttributeName(RouteAttributeName)]
         public string? Route { get; set; }
@@ -137,44 +144,6 @@ namespace NTurbo.TagHelpers
         }
 
         /// <summary>
-        /// The <c>id</c> attribute for the frame.
-        /// </summary>
-        /// <remarks>
-        /// Cannot be <c>null</c>.
-        /// </remarks>
-        [HtmlAttributeName(IdAttributeName)]
-        [DisallowNull]
-        public string? Id
-        {
-            get => _id;
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _id = value;
-            }
-        }
-
-        /// <summary>
-        /// The <c>src</c> attribute.
-        /// </summary>
-        /// <remarks>
-        /// Must be <c>null</c> if one of <see cref="Action"/>, <see cref="Controller"/>, <see cref="Area"/> 
-        /// <see cref="Page"/> or <see cref="Route"/> is non-<c>null</c>.
-        /// </remarks>
-        [HtmlAttributeName(SrcAttributeName)]
-        public string? Src { get; set; }
-
-        /// <summary>
-        /// The <c>target</c> attribute for the frame.
-        /// </summary>
-        [HtmlAttributeName(TargetAttributeName)]
-        public string? Target { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="ViewContext"/> for the current request.
         /// </summary>
         [HtmlAttributeNotBound]
@@ -198,24 +167,7 @@ namespace NTurbo.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            if (string.IsNullOrEmpty(_id))
-            {
-                throw new InvalidOperationException($"The '{IdAttributeName}' attribute cannot be empty.");
-            }
-
-            output.Attributes.SetAttribute(IdAttributeName, Id);
-
-            ResolveSrc(output);
-
-            if (Target != null)
-            {
-                output.Attributes.SetAttribute(TargetAttributeName, Target);
-            }
-        }
-
-        private void ResolveSrc(TagHelperOutput output)
-        {
-            if (Src != null)
+            if (output.Attributes.ContainsName(SrcAttributeName))
             {
                 if (Action != null ||
                     Controller != null ||
@@ -242,8 +194,6 @@ namespace NTurbo.TagHelpers
                             PageAttributeName,
                             PageHandlerAttributeName));
                 }
-
-                output.Attributes.SetAttribute(SrcAttributeName, Src);
 
                 return;
             }
@@ -291,13 +241,9 @@ namespace NTurbo.TagHelpers
             {
                 src = urlHelper.RouteUrl(Route, routeValues, Protocol, Host);
             }
-            else if (actionLink)
+            else  //actionLink
             {
                 src = urlHelper.Action(Action, Controller, routeValues, Protocol, Host);
-            }
-            else
-            {
-                return;
             }
 
             output.Attributes.Add(SrcAttributeName, src);

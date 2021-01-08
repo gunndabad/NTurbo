@@ -13,8 +13,25 @@ namespace NTurbo.Tests.TagHelpers
 {
     public class TurboFrameTagHelperTests
     {
-        [Fact]
-        public async Task ProcessAsync_PassesIdToOutput()
+        [Theory]
+        [InlineData("action", null, null, null, null, null, null, null, null)]
+        [InlineData(null, "controller", null, null, null, null, null, null, null)]
+        [InlineData(null, null, "area", null, null, null, null, null, null)]
+        [InlineData(null, null, null, "host", null, null, null, null, null)]
+        [InlineData(null, null, null, null, "page", null, null, null, null)]
+        [InlineData(null, null, null, null, null, "pageHandler", null, null, null)]
+        [InlineData(null, null, null, null, null, null, "protocol", null, null)]
+        [InlineData(null, null, null, null, null, null, null, "route", null)]
+        public async Task ProcessAsync_AlreadyHaveSrcAttributeAndRouteAttributeSpecified_ThrowsInvalidOperationException(
+            string action,
+            string controller,
+            string area,
+            string host,
+            string page,
+            string pageHandler,
+            string protocol,
+            string route,
+            IDictionary<string, string> routeValues)
         {
             // Arrange
             var context = new TagHelperContext(
@@ -25,7 +42,10 @@ namespace NTurbo.Tests.TagHelpers
 
             var output = new TagHelperOutput(
                 "turbo-frame",
-                attributes: new TagHelperAttributeList(),
+                attributes: new TagHelperAttributeList()
+                {
+                    { "src", "/src" }
+                },
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
@@ -43,132 +63,15 @@ namespace NTurbo.Tests.TagHelpers
 
             var tagHelper = new TurboFrameTagHelper(urlHelperFactoryMock.Object)
             {
-                Id = "test",
-                ViewContext = viewContext
-            };
-
-            // Act
-            await tagHelper.ProcessAsync(context, output);
-
-            // Assert
-            Assert.True(output.Attributes.ContainsName("id"));
-            Assert.Equal("test", output.Attributes["id"].Value);
-        }
-
-        [Fact]
-        public async Task ProcessAsync_WithNoSrcAttribute_DoesNotSetSrcAttributeOnOutput()
-        {
-            // Arrange
-            var context = new TagHelperContext(
-                tagName: "turbo-frame",
-                allAttributes: new TagHelperAttributeList(),
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-
-            var output = new TagHelperOutput(
-                "turbo-frame",
-                attributes: new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-
-            var urlHelperMock = new Mock<IUrlHelper>();
-
-            var urlHelperFactoryMock = new Mock<IUrlHelperFactory>();
-            urlHelperFactoryMock
-                .Setup(mock => mock.GetUrlHelper(It.IsAny<ActionContext>()))
-                .Returns(urlHelperMock.Object);
-
-            var viewContext = new ViewContext();
-
-            var tagHelper = new TurboFrameTagHelper(urlHelperFactoryMock.Object)
-            {
-                Id = "test",
-                ViewContext = viewContext
-            };
-
-            // Act
-            await tagHelper.ProcessAsync(context, output);
-
-            // Assert
-            Assert.False(output.Attributes.ContainsName("src"));
-        }
-
-        [Fact]
-        public async Task ProcessAsync_WithSrcAttribute_PassesSrcToOutput()
-        {
-            // Arrange
-            var context = new TagHelperContext(
-                tagName: "turbo-frame",
-                allAttributes: new TagHelperAttributeList(),
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-
-            var output = new TagHelperOutput(
-                "turbo-frame",
-                attributes: new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-
-            var urlHelperMock = new Mock<IUrlHelper>();
-
-            var urlHelperFactoryMock = new Mock<IUrlHelperFactory>();
-            urlHelperFactoryMock
-                .Setup(mock => mock.GetUrlHelper(It.IsAny<ActionContext>()))
-                .Returns(urlHelperMock.Object);
-
-            var viewContext = new ViewContext();
-
-            var tagHelper = new TurboFrameTagHelper(urlHelperFactoryMock.Object)
-            {
-                Id = "test",
-                Src = "/src",
-                ViewContext = viewContext
-            };
-
-            // Act
-            await tagHelper.ProcessAsync(context, output);
-
-            // Assert
-            Assert.True(output.Attributes.ContainsName("src"));
-            Assert.Equal("/src", output.Attributes["src"].Value);
-        }
-
-        [Fact]
-        public async Task ProcessAsync_MissingId_ThrowsInvalidOperationException()
-        {
-            // Arrange
-            var context = new TagHelperContext(
-                tagName: "turbo-frame",
-                allAttributes: new TagHelperAttributeList(),
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-
-            var output = new TagHelperOutput(
-                "turbo-frame",
-                attributes: new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    var tagHelperContent = new DefaultTagHelperContent();
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
-                });
-
-            var urlHelperMock = new Mock<IUrlHelper>();
-
-            var urlHelperFactoryMock = new Mock<IUrlHelperFactory>();
-            urlHelperFactoryMock
-                .Setup(mock => mock.GetUrlHelper(It.IsAny<ActionContext>()))
-                .Returns(urlHelperMock.Object);
-
-            var viewContext = new ViewContext();
-
-            var tagHelper = new TurboFrameTagHelper(urlHelperFactoryMock.Object)
-            {
+                Action = action,
+                Area = area,
+                Controller = controller,
+                Host = host,
+                Page = page,
+                PageHandler = pageHandler,
+                Protocol = protocol,
+                Route = route,
+                RouteValues = routeValues,
                 ViewContext = viewContext
             };
 
@@ -177,7 +80,9 @@ namespace NTurbo.Tests.TagHelpers
 
             // Assert
             Assert.IsType<InvalidOperationException>(ex);
-            Assert.Equal("The 'id' attribute cannot be empty.", ex.Message);
+            Assert.Equal(
+                "Cannot override the 'src' attribute for <turbo-frame>. An <turbo-frame> with a specified 'src' must not have attributes starting with 'asp-route-' or an 'asp-action', 'asp-controller', 'asp-area', 'asp-route', 'asp-protocol', 'asp-host', 'asp-page', or 'asp-page-handler' attribute.",
+                ex.Message);
         }
     }
 }
