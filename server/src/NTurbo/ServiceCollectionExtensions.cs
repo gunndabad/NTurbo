@@ -21,6 +21,8 @@ namespace NTurbo
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddSingleton<TurboStreamViewHelper>();
+
             return services;
         }
     }
