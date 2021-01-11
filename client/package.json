@@ -2,6 +2,12 @@
   "name": "nturbo",
   "version": "0.0.0",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gunndabad/NTurbo.git"
+  },
+  "bugs": "https://github.com/gunndabad/NTurbo/issues",
+  "author": "James Gunn <james@gunn.dev>",
   "license": "MIT",
   "peerDependencies": {
     "@hotwired/turbo": "7.0.0-beta.2",
