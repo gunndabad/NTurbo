@@ -5,7 +5,8 @@
   "main": "dist/turbo.es5-umd.js",
   "files": [
     "dist/*.js",
-    "dist/*.js.map"
+    "dist/*.js.map",
+    "dist/types/**/*"
   ],
   "repository": {
     "type": "git",
@@ -33,7 +34,7 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "rollup -c",
+    "build": "rollup -c && tsc --noEmit false --declaration true --emitDeclarationOnly true --outDir dist/types",
     "watch": "rollup -wc"
   }
 }
