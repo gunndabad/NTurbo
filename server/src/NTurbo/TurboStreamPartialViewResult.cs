@@ -11,7 +11,7 @@ namespace NTurbo
         /// <summary>
         /// The content type for a Turbo Stream.
         /// </summary>
-        public const string TurboStreamContentType = "text/html; turbo-stream; charset=utf-8";
+        public const string TurboStreamContentType = "text/vnd.turbo-stream.html";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TurboStreamPartialViewResult"/> class.
