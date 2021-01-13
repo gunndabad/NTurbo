@@ -27,6 +27,7 @@ jobs:
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      BUILD_CONFIGURATION: "Release"
 
     defaults:
       run:
@@ -39,20 +40,20 @@ jobs:
 
     - name: Clean
       run: |
-        dotnet clean --configuration Release
+        dotnet clean --configuration ${{ env.BUILD_CONFIGURATION }}
         dotnet nuget locals all --clear
 
     - name: Restore
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
     - name: Test
-      run: dotnet test test/NTurbo.Tests --configuration Release --no-build
+      run: dotnet test test/NTurbo.Tests --configuration ${{ env.BUILD_CONFIGURATION }} --no-build
 
     - name: Package
-      run: dotnet pack src/NTurbo/ --configuration Release --no-build
+      run: dotnet pack src/NTurbo/ --configuration ${{ env.BUILD_CONFIGURATION }} --no-build
       env:
         MINVERBUILDMETADATA: ${{ env.GITHUB_RUN_NUMBER }}
 
