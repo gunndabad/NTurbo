@@ -23,9 +23,9 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-  server-build:
+  server:
 
-    name: "Server build & package"
+    name: "Server"
     runs-on: windows-latest
 
     env:
@@ -66,16 +66,9 @@ jobs:
       env:
         MINVERBUILDMETADATA: ${{ env.GITHUB_RUN_NUMBER }}
 
-    - name: Publish package artifact
-      uses: actions/upload-artifact@v2-preview
-      with:
-        name: NTurbo.nupkg
-        path: server/src/NTurbo/bin/Release/*.nupkg
+  client:
 
-
-  client-build:
-
-    name: "Client build & package"
+    name: "Client"
     runs-on: windows-latest
 
     defaults:
@@ -99,9 +92,3 @@ jobs:
 
     - name: Build
       run: npm run build
-
-    - name: Publish package artifact
-      uses: actions/upload-artifact@v2-preview
-      with:
-        name: NTurbo-client
-        path: client/
