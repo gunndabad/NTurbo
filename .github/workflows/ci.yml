@@ -99,3 +99,10 @@ jobs:
 
     - name: Build
       run: npm run build
+
+    - name: Publish package to NPM
+      if: startsWith(github.ref, 'refs/tags/client-')
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        package: client/package.json
