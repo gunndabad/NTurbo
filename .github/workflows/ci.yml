@@ -38,6 +38,13 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Version
+      shell: bash
+      run: |
+        dotnet tool install --global minver-cli --version 2.4.0
+        version=$(minver --minimum-major-minor 1.0 --tag-prefix server-)
+        echo "MINVERVERSIONOVERRIDE=$version" >> $GITHUB_ENV
+
     - name: Clean
       run: |
         dotnet clean --configuration ${{ env.BUILD_CONFIGURATION }}
