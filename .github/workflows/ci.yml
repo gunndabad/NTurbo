@@ -66,6 +66,12 @@ jobs:
       env:
         MINVERBUILDMETADATA: ${{ env.GITHUB_RUN_NUMBER }}
 
+    - name: Publish package to NuGet
+      if: startsWith(github.ref, 'refs/tags/server-')
+      run: dotnet nuget push src\NTurbo\bin\${{ env.BUILD_CONFIGURATION }}\*.nupkg --api-key ${env:NUGET_TOKEN} --source https://api.nuget.org/v3/index.json
+      env:
+        NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+
   client:
 
     name: "Client"
