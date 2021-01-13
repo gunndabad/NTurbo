@@ -1,6 +1,7 @@
 {
   "name": "nturbo",
   "version": "0.0.0",
+  "description": "Client integration library for NTurbo, a server-side implementation of Turbo for ASP.NET Core.",
   "module": "dist/nturbo.es2017-esm.js",
   "main": "dist/turbo.es5-umd.js",
   "files": [

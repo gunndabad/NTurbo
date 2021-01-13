@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Copyright>Copyright © 2021 James Gunn</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/gunndabad/NTurbo</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/gunndabad/NTurbo</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>turbo, nturbo, hotwire</PackageTags>
+    <Description>A server-side implementation of Turbo for ASP.NET Core.</Description>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
