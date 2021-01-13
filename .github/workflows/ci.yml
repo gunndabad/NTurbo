@@ -18,6 +18,10 @@ on:
     - LICENSE
     - '**.md'
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
 jobs:
   server-build:
 
@@ -25,8 +29,6 @@ jobs:
     runs-on: windows-latest
 
     env:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-      DOTNET_CLI_TELEMETRY_OPTOUT: true
       BUILD_CONFIGURATION: "Release"
 
     defaults:
@@ -69,3 +71,37 @@ jobs:
       with:
         name: NTurbo.nupkg
         path: server/src/NTurbo/bin/Release/*.nupkg
+
+
+  client-build:
+
+    name: "Client build & package"
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Version
+      shell: bash
+      run: |
+        dotnet tool install --global minver-cli --version 2.4.0
+        version=$(minver --minimum-major-minor 1.0 --tag-prefix client-)
+        npm version $version
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build
+
+    - name: Publish package artifact
+      uses: actions/upload-artifact@v2-preview
+      with:
+        name: NTurbo-client
+        path: client/
